@@ -1,0 +1,35 @@
+# Clean.pl V2 -  Génère un seul fichier HTML 
+# Auteur: Bard
+# Objectif: Nettoyer les documents et les regrouper dans un fichier HTML
+
+use utf8;
+use open ':locale';
+
+open(COLL,"Collection/Collection") || die ("Erreur d'ouverture du fichier Collection\n") ;
+open (HTML, ">Collection/Collection1.html") or die $!;
+print HTML "<html><body>\n"; # Début du fichier HTML
+
+while (<COLL>) {
+    chomp;
+    $fic = $_;
+    open(CACM,"<Collection/$fic") || die ("Erreur d'ouverture du fichier $fic\n") ;
+    print HTML "<article class='cacm' id='$fic'>\n"; # Balise article pour chaque document
+    print HTML "<p>"; # Début paragraphe
+
+    while (<CACM>) {
+        chomp;
+        s/\s+/ /g; # Remplace plusieurs espaces par un seul
+        tr/àâäéèêëîïù/aaaeeeeiiu/; # Remplace les accents
+        s/(\"|\,|\=|\/|\.|\?|\'|\(|\)|\_|\$|\%|\+|\[|\]|\{|\}|\&|\;|\:|\~|\!|\@|\#|\^|\*|\||\<|\>|\-|\\)/ /g; # Supprime caractères spéciaux
+
+        print HTML lc($_) . " ";  # Convertit en minuscules et écrit dans le fichier HTML
+
+    }
+    print HTML "</p>\n"; # Fin paragraphe
+    print HTML "</article>\n"; # Fin article
+    close(CACM);
+}
+
+print HTML "</body></html>\n";  # Fin du fichier HTML
+close(HTML);
+close(COLL);

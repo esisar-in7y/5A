@@ -1,0 +1,79 @@
+# Remove.pl V2 -  Génère un seul fichier HTML après suppression des stop words
+# Auteur: Bard
+# Objectif: Supprimer les mots vides et regrouper dans un fichier HTML
+use utf8;
+use open ':locale';
+
+my %swords;
+open(STOPW,"Collection/common_words") || die ("Erreur d'ouverture du fichier de fichierAlire") ;
+while (<STOPW>) {
+	$_ =~ s/\n//g;
+	$swords{$_}=1;
+}
+
+while ( my ($cle,$val)=each(%swords) ) {
+		 print "motvide: $cle, value: $val\n";
+		
+}
+
+while (<COLL>) {
+	$_ =~ s/\n//g;
+	$fic = $_;
+	
+	open(F,"<Collection/$fic.flt") || die ("Erreur d'ouverture du fichier de fichierALire") ;
+	open(STP,">Collection/$fic.stp") || die ("Erreur d'ouverture du fichier de fichierAEcrire") ;
+
+	while (<F>) {
+		$_ =~ s/\n//g;
+		$_ =~ s/\s+/ /;
+	 
+	#enlever les stop words
+	@tab=split(/ /,$_);
+	$nbvide = 0;
+	foreach my $v (@tab) { #if exists $hash{$key}
+		if (!$swords{$v}) { 		#le mot courant exist dans le hash, on ne l'écrit pas sinon on l'ecrit
+			print STP $v . " ";
+		}
+		else { $nbvide++; print "(**". $v . " ";}
+	}
+	print $fic . " " . $nbvide . "\n";
+
+	}
+	close(F);
+	close(STP);
+ }
+ close(COLL);
+
+
+open(COLL,"<Collection/Collection") || die ("Erreur d'ouverture du fichier de fichierAlire") ;
+open (HTML, ">Collection/Collection2.html") or die $!;
+
+print HTML "<html><body>\n"; # Début du fichier HTML
+
+while (<COLL>) {
+    chomp;
+    $fic = $_;
+
+    open(F,"<Collection/$fic") || die ("Erreur d'ouverture du fichier $fic\n") ; # Lit les fichiers
+    print HTML "<article class='cacm' id='$fic'>\n"; # Balise article pour chaque document
+    print HTML "<p>"; # Début paragraphe
+
+    while (<F>) {
+        chomp;
+        s/\s+/ /g;
+        my @tab = split / /, $_;
+
+        foreach my $v (@tab) {
+            unless ($swords{$v}) {
+                print HTML "$v ";
+            }
+        }
+    }
+     print HTML "</p>\n"; # Fin paragraphe
+    print HTML "</article>\n"; # Fin article
+    close(F);
+
+}
+ print HTML "</body></html>\n"; # Fin du fichier HTML
+close(HTML);
+close(COLL);

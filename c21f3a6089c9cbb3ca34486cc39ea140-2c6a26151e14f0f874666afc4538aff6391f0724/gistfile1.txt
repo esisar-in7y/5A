@@ -1,0 +1,58 @@
+import os
+import glob
+from collections import Counter
+import matplotlib.pyplot as plt
+
+# Step 1: Collect word counts
+folder_path = 'Collection'
+word_counts = Counter()
+
+for filename in glob.glob(os.path.join(folder_path, '*')):
+    if os.path.isfile(filename) and filename.endswith(".stp"):
+        try:
+            with open(filename, 'r') as file:
+                for word in file.read().lower().split():
+                    word_counts[word] += 1
+        except Exception as e:
+            print(f"Error processing {filename}: {str(e)}")
+
+# Step 2: Prepare data for plotting
+most_common_words = word_counts.most_common(50)  # Get top 50 words
+words, counts = zip(*most_common_words)  # Unzip into two lists
+
+# Step 3: Create the plot
+plt.figure(figsize=(12, 6))
+plt.bar(range(len(counts)), counts, tick_label=words)
+plt.xticks(rotation=90)
+plt.xlabel('Words')
+plt.ylabel('Frequency')
+plt.title('Top 50 Words Frequency')
+plt.grid(axis='y')
+
+# Step 4: Show the plot
+plt.tight_layout()
+plt.show()
+
+# Calculate and print frequency of the most common word
+most_common_word, most_common_word_count = most_common_words[0]
+words,counts=zip(*word_counts.most_common())
+total_count = sum(counts)
+print(f"Frequency of '{most_common_word}': {most_common_word_count / total_count * 100:.2f}%")
+
+with open("vocab","w") as writer:
+    writer.write("\n".join(words))
+
+for filename in glob.glob(os.path.join(folder_path, '*')):
+    if os.path.isfile(filename) and filename.endswith(".stp"):
+        try:
+            with open(filename, 'r') as file:
+                word_counts = Counter()
+                for word in file.read().lower().split():
+                    word_counts[word] += 1
+                
+                with open(f"{filename}_df","w") as writer:
+                    for word, df in word_counts.items():
+                        writer.write(f"{word} {df}\n")
+    
+        except Exception as e:
+            print(f"Error processing {filename}: {str(e)}")
